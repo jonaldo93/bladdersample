@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        .container {
+            transform: scale(0.65);
+            transform-origin: top left;
+            width: 100%; /* Ensures container div takes full width after scaling */
+        }
         /* .highlight {
             position: absolute;
             background-color: rgba(255, 0, 0, 0.3);
@@ -12,26 +17,30 @@
 </head>
 <body>
 
-<div style="position: relative; display: inline-block;">
-    <img src="Screenshot 2024-06-23 at 10.43.02.png" usemap="#image-map" alt="Selectable Regions" id="selectable-image" style="display: block;">
-</div>
+<div class="container">
+    <div style="position: relative; display: inline-block;">
+        <img src="Screenshot 2024-06-23 at 10.43.02.png" usemap="#image-map" alt="Selectable Regions" id="selectable-image" style="display: block;">
+    </div>
 
-<map name="image-map">
-    <area target="" alt="right lateral wall" title="right lateral wall" href="#" coords="317,252,252,265,198,292,184,376,204,405,286,457,313,477,306,492,267,510,199,537,173,556,161,608,162,650,196,675,230,695,271,711,285,720,317,671,349,602,361,517,356,482,356,451,360,408,360,362,355,312,340,271,336,258" shape="poly" onclick="selectRegion('right lateral wall')">
-    <area target="" alt="trigone" title="trigone" href="#" coords="320,679,273,747,315,767,346,735,402,735,407,748,459,783,519,712,425,714,343,691" shape="poly" onclick="selectRegion('trigone')">
-    <area target="" alt="posterior wall" title="posterior wall" href="#" coords="355,591,428,570,483,570,552,591,575,604,551,677,525,700,483,709,428,707,387,700,366,689,346,684,329,677,326,669" shape="poly" onclick="selectRegion('posterior wall')">
-    <area target="" alt="dome" title="dome" href="#" coords="366,363,446,353,491,354,540,368,584,388,586,455,572,492,576,518,574,595,567,597,483,568,441,565,392,577,359,585,369,532,360,481,366,403" shape="poly" onclick="selectRegion('dome')">
-    <area target="" alt="anteriro wall" title="anteriro wall" href="#" coords="341,252,364,357,461,348,526,356,555,365,585,384,572,252,547,193,516,169,497,162,471,185,471,201,460,253,446,226,395,221,359,159,301,156" shape="poly" onclick="selectRegion('anteriro wall')">
-    <area target="" alt="left lateral wall" title="left lateral wall" href="#" coords="583,272,654,334,686,398,684,459,675,499,659,517,680,590,673,627,656,664,638,679,607,714,561,732,525,742,512,742,556,677,580,610,576,490,592,458,595,443" shape="poly" onclick="selectRegion('left lateral wall')">
-</map>
+    <map name="image-map" id="image-map">
+        <area target="" alt="right lateral wall" title="right lateral wall" href="#" coords="317,252,252,265,198,292,184,376,204,405,286,457,313,477,306,492,267,510,199,537,173,556,161,608,162,650,196,675,230,695,271,711,285,720,317,671,349,602,361,517,356,482,356,451,360,408,360,362,355,312,340,271,336,258" shape="poly" onclick="selectRegion('right lateral wall')">
+        <area target="" alt="trigone" title="trigone" href="#" coords="320,679,273,747,315,767,346,735,402,735,407,748,459,783,519,712,425,714,343,691" shape="poly" onclick="selectRegion('trigone')">
+        <area target="" alt="posterior wall" title="posterior wall" href="#" coords="355,591,428,570,483,570,552,591,575,604,551,677,525,700,483,709,428,707,387,700,366,689,346,684,329,677,326,669" shape="poly" onclick="selectRegion('posterior wall')">
+        <area target="" alt="dome" title="dome" href="#" coords="366,363,446,353,491,354,540,368,584,388,586,455,572,492,576,518,574,595,567,597,483,568,441,565,392,577,359,585,369,532,360,481,366,403" shape="poly" onclick="selectRegion('dome')">
+        <area target="" alt="anteriro wall" title="anteriro wall" href="#" coords="341,252,364,357,461,348,526,356,555,365,585,384,572,252,547,193,516,169,497,162,471,185,471,201,460,253,446,226,395,221,359,159,301,156" shape="poly" onclick="selectRegion('anteriro wall')">
+        <area target="" alt="left lateral wall" title="left lateral wall" href="#" coords="583,272,654,334,686,398,684,459,675,499,659,517,680,590,673,627,656,664,638,679,607,714,561,732,525,742,512,742,556,677,580,610,576,490,592,458,595,443" shape="poly" onclick="selectRegion('left lateral wall')">
+    </map>
 
-<div id="results-box" style="margin-top: 20px;">
-    <h3>Selected Regions</h3>
-    <ul id="selected-regions-list"></ul>
-    <button onclick="resetSelection()">Reset</button>
+    <div id="results-box" style="margin-top: 20px;">
+        <h3>Selected Regions</h3>
+        <ul id="selected-regions-list"></ul>
+        <button onclick="resetSelection()">Reset</button>
+    </div>
 </div>
 
 <script>
+    const SCALE_FACTOR = 0.65;
+
     function selectRegion(region) {
         const resultsList = document.getElementById('selected-regions-list');
         const listItem = document.createElement('li');
@@ -44,19 +53,23 @@
         resultsList.innerHTML = '';
     }
 
+    function scaleCoords(coords, scale) {
+        return coords.map(coord => Math.round(coord * scale));
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
-        const image = document.getElementById('selectable-image');
-        const map = document.querySelector('map');
+        const map = document.getElementById('image-map');
         const areas = map.querySelectorAll('area');
 
         areas.forEach(area => {
             const coords = area.coords.split(',').map(Number);
-            const shape = area.shape;
+            const scaledCoords = scaleCoords(coords, SCALE_FACTOR);
+            area.coords = scaledCoords.join(',');
 
-            if (shape === 'poly') {
-                for (let i = 0; i < coords.length; i += 2) {
-                    const x = coords[i];
-                    const y = coords[i + 1];
+            if (area.shape === 'poly') {
+                for (let i = 0; i < scaledCoords.length; i += 2) {
+                    const x = scaledCoords[i];
+                    const y = scaledCoords[i + 1];
                     const highlight = document.createElement('div');
                     highlight.className = 'highlight';
                     highlight.style.left = `${x}px`;
