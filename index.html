@@ -3,11 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        /* .highlight {
+        body {
+            transform: scale(0.7);
+            transform-origin: 0 0;
+        }
+        .highlight {
             position: absolute;
             background-color: rgba(255, 0, 0, 0.3);
             pointer-events: none;
-        } */
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
@@ -33,42 +38,57 @@
 
 <script>
     function selectRegion(region) {
+        const image = document.getElementById('selectable-image');
         const resultsList = document.getElementById('selected-regions-list');
-        const listItem = document.createElement('li');
-        listItem.textContent = region;
-        resultsList.appendChild(listItem);
+        const existingItem = [...resultsList.children].find(item => item.textContent === region);
+        const existingHighlight = document.querySelector(`.highlight[data-region="${region}"]`);
+
+        if (existingItem) {
+            resultsList.removeChild(existingItem);
+            if (existingHighlight) {
+                existingHighlight.remove();
+            }
+        } else {
+            const listItem = document.createElement('li');
+            listItem.textContent = region;
+            resultsList.appendChild(listItem);
+
+            const area = document.querySelector(`area[alt="${region}"]`);
+            if (area) {
+                const coords = area.coords.split(',').map(Number);
+                const shape = area.shape;
+
+                if (shape === 'poly') {
+                    const highlight = document.createElement('div');
+                    highlight.className = 'highlight';
+                    highlight.dataset.region = region;
+
+                    let polyCoords = '';
+                    for (let i = 0; i < coords.length; i += 2) {
+                        polyCoords += `${coords[i]}px ${coords[i + 1]}px, `;
+                    }
+                    polyCoords = polyCoords.slice(0, -2);
+
+                    highlight.style.clipPath = `polygon(${polyCoords})`;
+                    highlight.style.width = `${image.offsetWidth}px`;
+                    highlight.style.height = `${image.offsetHeight}px`;
+                    highlight.style.left = `${image.offsetLeft}px`;
+                    highlight.style.top = `${image.offsetTop}px`;
+
+                    document.body.appendChild(highlight);
+                }
+            }
+        }
     }
 
     function resetSelection() {
         const resultsList = document.getElementById('selected-regions-list');
         resultsList.innerHTML = '';
+        document.querySelectorAll('.highlight').forEach(el => el.remove());
     }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const image = document.getElementById('selectable-image');
-        const map = document.querySelector('map');
-        const areas = map.querySelectorAll('area');
-
-        areas.forEach(area => {
-            const coords = area.coords.split(',').map(Number);
-            const shape = area.shape;
-
-            if (shape === 'poly') {
-                for (let i = 0; i < coords.length; i += 2) {
-                    const x = coords[i];
-                    const y = coords[i + 1];
-                    const highlight = document.createElement('div');
-                    highlight.className = 'highlight';
-                    highlight.style.left = `${x}px`;
-                    highlight.style.top = `${y}px`;
-                    highlight.style.width = '10px';
-                    highlight.style.height = '10px';
-                    document.body.appendChild(highlight);
-                }
-            }
-        });
-    });
 </script>
+
+
 
 </body>
 </html>
